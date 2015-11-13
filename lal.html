@@ -1,0 +1,53 @@
+<head>
+	<title>foxchat</title>
+</head>
+<body>
+  Meow for everyone.
+	<script language="JavaScript" type="text/javascript">
+	<!--
+		var sendFunc = function () {
+	  	xhttp = new XMLHttpRequest();
+		  xhttp.onReadyStateExchange = function() {
+			  if (xhttp.ready == 4 && xhhtp.status == 200) {					
+			  }
+		  }
+		  xhttp.open("GET", 
+				"/send?" +
+				"user=" + encodeURIComponent(document.getElementById("user").value) + "&" +
+				"text=" + encodeURIComponent(document.getElementById("message").value), 
+				true);
+		  document.getElementById("message").value = "";
+		  xhttp.send();
+  	}
+    
+    var chatFunc  = function () {
+			xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			  console.log ("state change. state: " + xhttp.readyState);
+				if (xhttp.readyState == 4 && xhttp.status == 200) {
+					console.log ("receive: " + xhttp.responseText);
+					var json=eval( '('+xhttp.responseText+')' );
+					console.log ("length: " + json.messages.length);
+				  document.getElementById("chat").value = "";
+					for (i = 0; i < json.messages.length; i++) {
+						document.getElementById("chat").value += json.messages[i].user + ": " +
+      																						   json.messages[i].text + "\n";
+					}
+				}
+			}
+			xhttp.open("GET", "/chat", true);
+			xhttp.send();
+			setTimeout(chatFunc, 1000);
+		}
+	//-->
+	</script>
+	<br>
+	<textarea id="chat" rows="25" cols="60"></textarea>
+	<br>
+	<textarea id="user" rows="1" cols="15"></textarea>
+  <textarea id="message" rows="3" cols="40"></textarea>
+	<input id="button_send" type="SUBMIT" value="Send" onclick="sendFunc()">
+	<script type="text/javascript">
+	  chatFunc()
+	</script>
+</body>
