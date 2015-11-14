@@ -14,13 +14,12 @@ private:
 	char* ip;
 	int port;
 	std::function<int(my_socket)> task;
-	std::function<void()> error_func;
 
 public:
 	my_socket();
 	my_socket(const my_socket& other);
   my_socket(const char* ip, int port, 
-			std::function<int(my_socket)> task, std::function<void()> error_func);
+			std::function<int(my_socket)> task);
 
 	~my_socket();
 
@@ -28,7 +27,6 @@ public:
 	my_socket& operator =(const my_socket& other);
   
 	int get_fd() const;
-	std::function<void()> get_error_func() const;
 	void close_socket();
 
 	friend client;
@@ -56,13 +54,12 @@ struct server {
 private:
 	my_socket heart;
 	std::function<int(my_socket)> set_task;
-	std::function<void()> set_error;
 	int max_connected;
 
 public:
 	server();
 	server(const my_socket& heart, int max_connected,
-			std::function<int(my_socket)> set_task, std::function<void()> set_error);
+			std::function<int(my_socket)> set_task);
 	~server();
 	int bind_heart();
 	client accept_heart();

@@ -3,10 +3,9 @@
 server::server(){}
 
 server::server(const my_socket& heart, int max_connected,
-		std::function<int(my_socket)> set_task, std::function<void()> set_error): 
+		std::function<int(my_socket)> set_task): 
 	heart(heart), max_connected(max_connected) {
 	this->set_task = set_task;
-	this->set_error = set_error;
 }
 
 server::~server() {
@@ -17,7 +16,6 @@ int server::bind_heart() {
 	setsockopt(this->heart.fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 	if (bind(this->heart.fd, (sockaddr*)&(this->heart.addr), sizeof(this->heart.addr)) < 0) {
 		printf("Can't bind: %m.\n");
-		this->heart.error_func();
 		return 1;
 	}
 	int r = listen(this->heart.fd, this->max_connected);
@@ -30,12 +28,10 @@ client server::accept_heart() {
 	int addr_len = sizeof(tmp.addr);
   tmp.fd = accept(this->heart.fd, (sockaddr*)&tmp.addr, (socklen_t*)&addr_len);
 	if (tmp.fd < 0) {
-		printf("Can't accept.\n");
-		this->heart.error_func();
+		printf("Can't accept. %m\n");
 	} else {
 		this->heart.complete_task(this->heart);
 		tmp.task = this->set_task;
-		tmp.error_func = this->set_error;
 	}
 	return client(tmp);
 }

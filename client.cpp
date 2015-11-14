@@ -11,7 +11,6 @@ int client::connect_heart() {
 	if (connect(this->heart.fd, 
 				(sockaddr*)&(this->heart.addr), sizeof(this->heart.addr)) < 0) {
 		printf("Can't connect.%m\n");
-		this->heart.error_func();
 		return 1;
 	} 
 	return 0;

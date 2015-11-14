@@ -11,13 +11,11 @@ private:
 
 	int cur_events;
 	int fd;
-	std::function<void()> error_func;
 	int magic_const;
 
 public:
   my_epoll();  
-  my_epoll(std::function<void()> error_func);
-	~my_epoll();
+ 	~my_epoll();
 
 	int add_client(client item, int flag);
 	int add_server(server item);

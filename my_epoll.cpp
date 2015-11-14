@@ -3,21 +3,9 @@
 my_epoll::my_epoll() {
 	this->fd = epoll_create(10);
 	if (this->fd < 0) {
-		error_func();
+		printf("Can't create epoll socket: %m\n");
 	} else {
 		this->cur_events = 0;
-		this->error_func = [](){printf("Epoll troubles.\n");};
-		this->magic_const = 0;
-	}
-}
-
-my_epoll::my_epoll(std::function<void()> error_func) {
-	this->fd = epoll_create(10);
-	if (this->fd < 0) {
-		error_func();
-	} else {
-		this->cur_events = 0;
-		this->error_func = error_func;
 		this->magic_const = 0;
 	}
 }
@@ -36,7 +24,6 @@ int my_epoll::add_client(client item, int flag) {
 		ev.events |= EPOLLOUT;
 	} else {
 		printf("Invalid flag.\n");
-		this->error_func();
 		return 1;
 	}
 	
@@ -46,8 +33,7 @@ int my_epoll::add_client(client item, int flag) {
 	ev.data.fd = item_fd;
 
 	if (epoll_ctl(this->fd, EPOLL_CTL_ADD, item_fd, &ev) == -1) {
-		printf("Can't add client.\n");
-		this->error_func();
+		printf("Can't add client. %m\n");
 		return 1;
 	}
 	client_sockets[item_fd] = item;
@@ -65,8 +51,7 @@ int my_epoll::add_server(server item) {
 	ev.data.u64 = 0;
 	ev.data.fd = item_fd;
 	if (epoll_ctl(this->fd, EPOLL_CTL_ADD, item_fd, &ev) == -1) {
-		printf("Can't add server.\n");
-		error_func();
+		printf("Can't add server. %m\n");
 		return 1;
 	}
 	server_sockets[item_fd] = item;
@@ -76,8 +61,7 @@ int my_epoll::add_server(server item) {
 
 int my_epoll::delete_client(client item) {
 	if (epoll_ctl(this->fd, EPOLL_CTL_DEL, item.get_heart().get_fd(), 0) == -1) {
-		printf("Can't delete client.\n");
-		error_func();
+		printf("Can't delete client. %m\n");
 		return 1;
 	}
 	client_sockets.erase(item.get_heart().get_fd());
@@ -107,8 +91,7 @@ void my_epoll::run() {
 		}
 		if (cnt == -1) { 
 			if (errno != EINTR) {
-				printf("Problems with epoll_wait.");
-				this->error_func();
+				printf("Problems with epoll_wait: %m");
 				return;
 			} else {
 				continue;
@@ -128,7 +111,6 @@ void my_epoll::run() {
 				
 				if (flag & EPOLLRDHUP || flag & EPOLLHUP) {
 					printf("Disconnected.\n");
-					this->error_func();
 					if (delete_client(tmp)) {
 						return;
 					}
@@ -140,6 +122,7 @@ void my_epoll::run() {
 				}
 			}
 		}
+
 	}
 }
 
